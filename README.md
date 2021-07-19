@@ -6,8 +6,9 @@ Ants racing for Stadium Goods
 
 INSTRUCTIONS FOR RUNNING FROM CODE:
 
-1   Download expo-cli:
+1   Download expo-cli and all packages:
     "npm i -g expo-cli"
+    "npm i"
     
 2   Download "Expo Go" on an iOS or Android device (tested mainly on iOS)
 
