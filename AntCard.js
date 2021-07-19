@@ -1,5 +1,12 @@
 import React, { Component } from "react";
-import { Dimensions, Image, Text, TouchableOpacity, View } from "react-native";
+import {
+  Dimensions,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import generateAntWinLikelihoodCalculator from "./LikelihoodGenerator";
 
 export default class AntCard extends Component {
@@ -8,110 +15,144 @@ export default class AntCard extends Component {
   }
 
   state = {
-    likelihood: 0, //not yet run
+    likelihood: 0,
+    hasRun: false,
   };
 
-  calculator = generateAntWinLikelihoodCalculator();
-
-  setLikelihood = (likelihood) => {
-    this.setState({ likelihood }, () => {
+  setLikelihood = (newLikelihood) => {
+    this.setState({ likelihood: newLikelihood }, () => {
       if (this.props.onChange) {
-        this.props.onChange(this.state.likelihood, this.props.item.name);
+        this.props.onChange(newLikelihood, this.props.item.name);
       }
     });
   };
 
   calculateLikelihood = () => {
-    this.setState({ likelihood: 0 });
-    this.calculator(this.setLikelihood);
+    this.setState({ hasRun: true, likelihood: 0 });
+
+    let calculator = generateAntWinLikelihoodCalculator();
+    calculator(this.setLikelihood);
   };
 
   componentDidMount() {
-    console.log(this.props.item.name, "mounting");
-    this.calculateLikelihood();
+    if (this.props.item.likelihood !== undefined)
+      this.setState({ likelihood: this.props.item.likelihood });
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.item.likelihood !== this.props.item.likelihood) {
-      this.setState({ likelihood: this.props.item.likelihood });
-    } else if (prevState.likelihood !== this.state.likelihood) {
-      console.log(
-        this.props.item.name.substring(0, 13),
-        "\t\t",
-        this.state.likelihood
-      );
-    } else if (prevProps.refreshing !== this.props.refreshing) {
+      if (this.props.item.likelihood !== undefined)
+        this.setState({ likelihood: this.props.item.likelihood });
+    } else if (
+      prevProps.refreshing !== this.props.refreshing &&
+      this.props.refreshing
+    ) {
       this.calculateLikelihood();
     }
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    // if (this.state.likelihood !== nextState.likelihood) {
-    //   return true;
-    // }
-    return true;
+    if (this.props.item !== nextProps.item) return true;
+    else if (this.state.likelihood !== nextState.likelihood) return true;
+    else if (this.state.hasRun !== nextState.hasRun) return true;
+    return false;
   }
 
   render() {
     const { item } = this.props;
 
+    const imageStyle = {
+      tintColor: item.color.toLowerCase(),
+      height: item.length * 2.5,
+      width: item.weight * 12,
+    };
+
     return (
-      <View
-        style={{
-          alignItems: "center",
-          backgroundColor: "cyan",
-          borderWidth: 1,
-          flexDirection: "row",
-          height: 100,
-          justifyContent: "space-between",
-          marginVertical: 15,
-          paddingHorizontal: 15,
-        }}
-      >
-        <View>
-          <Text style={{ color: "black", fontSize: 18 }}>
-            {item.name}
-            <Text style={{ color: "navy", fontSize: 12 }}>
-              {/* {"\nColor:\t" + item.color}
-              {"\nLength:\t" + item.length}
-              {"\nWeight:\t" + item.weight} */}
-              {"\nWinning odds:\t"}
-              {typeof this.state.likelihood === "number"
-                ? this.state.likelihood.toFixed(5)
-                : this.state.likelihood}
-            </Text>
-          </Text>
-          <TouchableOpacity
-            style={{
-              alignItems: "center",
-              backgroundColor: "royalblue",
-              height: 30,
-              justifyContent: "center",
-              width: 60,
-            }}
-            onPress={this.calculateLikelihood}
-          >
-            <Text>{"RELOAD"}</Text>
-          </TouchableOpacity>
+      <View style={styles.container}>
+        <View style={styles.titleBox}>
+          <Text style={styles.title}>{item.name}</Text>
         </View>
-        {/* <MaterialCommunityIcons
-            name="bug"
-            size={item.length * 5}
-            color={item.color.toLowerCase()}
-            iconStyle={{ marginHorizontal: 30 }}
-          /> */}
-        <View>
-          <Image
-            resizeMode={"stretch"}
-            source={require("./assets/ant-icon.png")}
-            style={{
-              tintColor: item.color.toLowerCase(),
-              height: item.length * 4,
-              width: item.weight * 20,
-            }}
-          />
+        <View style={styles.infoBox}>
+          <View style={styles.oddsBox}>
+            <Text
+              style={[
+                styles.oddsText,
+                { color: this.state.likelihood === 0 ? "grey" : "blue" },
+              ]}
+            >
+              <Text style={styles.label}>{"Winning odds:\t"}</Text>
+              {this.state.likelihood === 0
+                ? this.state.hasRun
+                  ? "Calculating..."
+                  : "Not yet run"
+                : this.state.likelihood.toFixed(5)}
+            </Text>
+            <TouchableOpacity
+              style={styles.reloadButton}
+              onPress={this.calculateLikelihood}
+            >
+              <Text>{"RELOAD"}</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.imageBox}>
+            <Image
+              resizeMode={"stretch"}
+              source={require("./assets/ant-icon.png")}
+              style={imageStyle}
+            />
+          </View>
         </View>
       </View>
     );
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    borderWidth: 1,
+    height: 100,
+    justifyContent: "space-evenly",
+  },
+  imageBox: {
+    alignItems: "center",
+    flex: 2,
+    justifyContent: "center",
+  },
+  infoBox: {
+    flexDirection: "row",
+    justifyContent: "center",
+    paddingVertical: 5,
+  },
+  label: {
+    color: "black",
+    fontWeight: "bold",
+  },
+  oddsBox: {
+    alignItems: "center",
+    flex: 3,
+    marginHorizontal: 10,
+  },
+  oddsText: {
+    color: "darkblue",
+    fontSize: 14,
+    marginVertical: 5,
+  },
+  reloadButton: {
+    alignItems: "center",
+    borderWidth: 0.2,
+    // backgroundColor: "royalblue",
+    height: 25,
+    justifyContent: "center",
+    width: "100%",
+  },
+  title: {
+    fontWeight: "bold",
+    fontSize: 16,
+    textAlign: "center",
+  },
+  titleBox: {
+    borderBottomWidth: 0.5,
+    flex: 1,
+    justifyContent: "center",
+  },
+});

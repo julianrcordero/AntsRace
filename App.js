@@ -1,10 +1,7 @@
 import { StatusBar } from "expo-status-bar";
-import React, { Component, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
-  FlatList,
-  Image,
-  Linking,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -13,26 +10,23 @@ import {
   View,
 } from "react-native";
 import { create as apiCreate } from "apisauce";
-import create from "zustand";
 import AntCard from "./AntCard";
 const { height, width } = Dimensions.get("window");
+import _ from "lodash";
+import MyCarousel from "./MyCarousel";
+import AuthContext from "./context";
+import WelcomeScreen from "./WelcomeScreen";
 
+import MyButton from "./MyButton";
 import { useTransition, animated } from "@react-spring/native";
 const AnimatedView = animated(View);
-const ListItemHeight = 190;
-
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-
-import { Transition, Transitioning } from "react-native-reanimated";
-
-const useStore = create((set) => ({
-  bears: 0,
-  increasePopulation: () => set((state) => ({ bears: state.bears + 1 })),
-  removeAllBears: () => set({ bears: 0 }),
-}));
+const ListItemHeight = 100;
 
 export default function App() {
+  const [user, setUser] = useState();
   const [data, setData] = useState([]);
+  const [size, setSize] = useState({ width, height });
+  const myCarousel = useRef();
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -48,7 +42,6 @@ export default function App() {
     }
   `;
 
-  // const getItem = () => fetch(myURL + myEndpoint);
   const client = apiCreate({ baseURL: myURL });
   const getItem = () => client.get("", { query });
 
@@ -56,116 +49,127 @@ export default function App() {
     const response = await getItem();
     if (response.ok) {
       setData(response.data.data.ants);
-      setRefreshing(false);
     } else {
       console.log(response);
     }
+
+    setRefreshing(false);
   };
 
-  const transition = (
-    <Transition.Together>
-      <Transition.Change durationMs={250} />
-    </Transition.Together>
-  );
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  // useEffect(() => {
-  //   loadData();
-  // }, []);
-
-  const keyExtractor = (item, index) => String(index);
-
-  const eventHandler = (likelihood, name) => {
-    // transitioningView.current.animateNextTransition();
-
+  const eventHandler = (newLikelihood, name) => {
     let sortedData = [...data];
     let index = sortedData.findIndex((el) => el.name === name);
-    sortedData[index] = { ...sortedData[index], likelihood: likelihood };
-    // sortedData.sort((a, b) => b.likelihood - a.likelihood);
-    // setData(sortedData);
-  };
-
-  const renderItem = ({ item }) => {
-    return (
-      <AntCard item={item} refreshing={refreshing} onChange={eventHandler} />
+    sortedData[index] = { ...sortedData[index], likelihood: newLikelihood };
+    setData(
+      _.orderBy(sortedData, ({ likelihood }) => likelihood || 0, ["desc"])
     );
   };
-
-  const contentContainerStyle = { width: width * 0.85 };
 
   const handleRefresh = () => {
     setRefreshing(true);
     loadData();
   };
 
-  const transitioningView = useRef();
-
-  const edges = [...data];
   const transitions = useTransition(
-    edges?.map((myData, i) => ({ ...myData, y: -(i * ListItemHeight) })),
+    data?.map((myData, i) => ({
+      ...myData,
+      y: -(i * ListItemHeight),
+    })),
     {
-      key: (item) => item.id,
+      key: (item) => item.name,
       from: { height: 0, opacity: 0 },
       leave: { height: 0, opacity: 0 },
       enter: ({ y, height }) => ({ y, height, opacity: 1 }),
-      // sort: (a, b) => b.likelihood - a.likelihood,
+      sort: (a, b) => {
+        b.likelihood - a.likelihood;
+      },
       update: ({ y, height }) => ({ y, height }),
+
+      config: { mass: 5, tension: 500, friction: 150 },
     }
   );
 
+  const shuffle = () => setData(_.shuffle(data));
+
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="auto" />
-      <TouchableOpacity
-        style={{
-          alignItems: "center",
-          backgroundColor: "royalblue",
-          justifyContent: "center",
-          padding: 15,
-        }}
-        onPress={handleRefresh}
-      >
-        <Text>{"RELOAD ALL"}</Text>
-      </TouchableOpacity>
-      {/* <Transitioning.View ref={transitioningView} transition={transition}>
-        <FlatList
-          data={data}
-          keyExtractor={keyExtractor}
-          renderItem={renderItem}
-          contentContainerStyle={contentContainerStyle}
-          refreshing={refreshing}
-          onRefresh={handleRefresh}
-        />
-      </Transitioning.View> */}
-      <ScrollView
-        contentContainerStyle={{ minHeight: edges.length * ListItemHeight }}
-      >
-        {transitions((style, item, _, index) => (
-          <AnimatedView
-            style={{
-              zIndex: edges.length - index,
-              bottom: style.y,
-              height: style.height,
-              opacity: style.opacity,
-            }}
-            key={item.id}
-          >
-            <AntCard
-              item={item}
-              refreshing={refreshing}
-              onChange={eventHandler}
-            />
-          </AnimatedView>
-        ))}
-      </ScrollView>
+    <SafeAreaView style={styles.safeArea}>
+      <AuthContext.Provider value={{ user, setUser }}>
+        {user ? (
+          <>
+            <StatusBar style="auto" />
+            <View style={styles.buttonBox}>
+              <MyButton
+                color={"dodgerblue"}
+                onPress={handleRefresh}
+                text={"RUN ODDS"}
+              />
+              <MyButton
+                color={"lightgrey"}
+                onPress={shuffle}
+                text={"SHUFFLE"}
+              />
+            </View>
+
+            <Text>{"Logged in as:\t" + user}</Text>
+            <ScrollView
+              contentContainerStyle={[
+                { minHeight: data.length * ListItemHeight },
+                styles.scrollViewContainer,
+              ]}
+              showsVerticalScrollIndicator={false}
+            >
+              {transitions((style, item, _, index) => (
+                <AnimatedView
+                  style={{
+                    zIndex: data.length - index,
+                    bottom: style.y,
+                    height: style.height,
+                    opacity: style.opacity,
+                    marginVertical: 5,
+                  }}
+                  key={item.name}
+                >
+                  <AntCard
+                    item={item}
+                    refreshing={refreshing}
+                    onChange={eventHandler}
+                  />
+                </AnimatedView>
+              ))}
+            </ScrollView>
+            <View style={styles.buttonBox}>
+              <MyButton
+                text={"LOG OUT"}
+                color={"darkgrey"}
+                onPress={() => setUser(null)}
+              />
+            </View>
+            <MyCarousel ref={myCarousel} />
+          </>
+        ) : (
+          <WelcomeScreen setUser={setUser} />
+        )}
+      </AuthContext.Provider>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  buttonBox: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: width * 0.85,
+  },
+  safeArea: {
     flex: 1,
     backgroundColor: "#fff",
     alignItems: "center",
-    // justifyContent: "center",
+  },
+  scrollViewContainer: {
+    width: width * 0.85,
   },
 });
