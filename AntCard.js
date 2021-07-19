@@ -1,12 +1,5 @@
 import React, { Component } from "react";
-import {
-  Dimensions,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import generateAntWinLikelihoodCalculator from "./LikelihoodGenerator";
 
 export default class AntCard extends Component {
