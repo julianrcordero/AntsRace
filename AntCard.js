@@ -58,14 +58,14 @@ export default class AntCard extends Component {
       <View
         style={{
           borderWidth: 1,
-          height: 125,
+          height: 115,
         }}
       >
         <Text
           style={{
             borderWidth: 0.5,
-            fontSize: 20,
-            paddingVertical: 5,
+            fontSize: 18,
+            // paddingVertical: 5,
             textAlign: "center",
           }}
         >
@@ -75,7 +75,7 @@ export default class AntCard extends Component {
           style={{
             // alignItems: "center",
             flexDirection: "row",
-            // justifyContent: "flex-start",
+            justifyContent: "center",
             paddingVertical: 5,
           }}
         >
@@ -83,6 +83,7 @@ export default class AntCard extends Component {
             style={{
               alignItems: "center",
               flex: 3,
+              marginHorizontal: 10,
             }}
           >
             <Text
@@ -105,7 +106,7 @@ export default class AntCard extends Component {
                 backgroundColor: "royalblue",
                 height: 30,
                 justifyContent: "center",
-                width: "80%",
+                width: "100%",
               }}
               onPress={this.calculateLikelihood}
             >
@@ -124,8 +125,8 @@ export default class AntCard extends Component {
               source={require("./assets/ant-icon.png")}
               style={{
                 tintColor: item.color.toLowerCase(),
-                height: item.length * 3.5,
-                width: item.weight * 16,
+                height: item.length * 3,
+                width: item.weight * 15,
               }}
             />
           </View>

@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
   SafeAreaView,
@@ -18,7 +18,7 @@ import MyCarousel from "./MyCarousel";
 
 import { useTransition, animated } from "@react-spring/native";
 const AnimatedView = animated(View);
-const ListItemHeight = 125;
+const ListItemHeight = 115;
 
 const useStore = create((set) => ({
   bears: 0,
@@ -29,6 +29,7 @@ const useStore = create((set) => ({
 export default function App() {
   const [data, setData] = useState([]);
   const [size, setSize] = useState({ width, height });
+  const myCarousel = useRef();
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -63,11 +64,12 @@ export default function App() {
   }, []);
 
   const eventHandler = (newLikelihood, name) => {
-    console.log("setting", name, "to", newLikelihood);
     let sortedData = [...data];
     let index = sortedData.findIndex((el) => el.name === name);
     sortedData[index] = { ...sortedData[index], likelihood: newLikelihood };
-    setData(_.orderBy(sortedData, ["likelihood"], ["desc"]));
+    setData(
+      _.orderBy(sortedData, ({ likelihood }) => likelihood || 0, ["desc"])
+    );
   };
 
   const handleRefresh = () => {
@@ -96,7 +98,8 @@ export default function App() {
 
   const shuffle = () => setData(_.shuffle(data));
 
-  const handleSort = () => setData(_.sortBy(data, ["likelihood"]));
+  const handleSort = () =>
+    setData(_.orderBy(data, ({ likelihood }) => likelihood || 0, ["desc"]));
 
   return (
     <SafeAreaView style={styles.container}>
@@ -104,6 +107,8 @@ export default function App() {
       <View
         style={{
           flexDirection: "row",
+          justifyContent: "space-around",
+          width: "100%",
         }}
       >
         <TouchableOpacity
@@ -128,17 +133,17 @@ export default function App() {
         >
           <Text>{"Shuffle"}</Text>
         </TouchableOpacity>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={{
             alignItems: "center",
             backgroundColor: "royalblue",
             justifyContent: "center",
             padding: 10,
           }}
-          onPress={handleSort} //handleRefresh}
+          onPress={handleSort}
         >
           <Text>{"Sort"}</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
       <ScrollView
         contentContainerStyle={{
@@ -166,7 +171,7 @@ export default function App() {
           </AnimatedView>
         ))}
       </ScrollView>
-      <MyCarousel ref={(ref) => (this.carousel = ref)} />
+      <MyCarousel ref={myCarousel} />
     </SafeAreaView>
   );
 }
