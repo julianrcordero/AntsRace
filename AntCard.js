@@ -13,7 +13,6 @@ export default class AntCard extends Component {
   };
 
   setLikelihood = (newLikelihood) => {
-    // console.log("setting", this.props.item.name, "to", newLikelihood);
     this.setState({ likelihood: newLikelihood }, () => {
       if (this.props.onChange) {
         this.props.onChange(newLikelihood, this.props.item.name);
@@ -29,41 +28,27 @@ export default class AntCard extends Component {
   };
 
   componentDidMount() {
-    // console.log(this.props.item.likelihood);
     if (this.props.item.likelihood !== undefined)
       this.setState({ likelihood: this.props.item.likelihood });
-    // else if (this.state.likelihood === 0) {
-    //   this.calculateLikelihood();
-    // }
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.item.likelihood !== this.props.item.likelihood) {
-      //   console.log("props.item.likelihood", this.props.item.likelihood);
       if (this.props.item.likelihood !== undefined)
-        this.setState(
-          { likelihood: this.props.item.likelihood }
-          //     () =>
-          //   console.log(
-          //     this.props.item.name.substring(0, 13),
-          //     "\t\t",
-          //     "likelihood updated"
-          //   )
-        );
+        this.setState({ likelihood: this.props.item.likelihood });
     } else if (
       prevProps.refreshing !== this.props.refreshing &&
       this.props.refreshing
     ) {
       this.calculateLikelihood();
-      //   console.log("refreshing");
     }
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    // if (this.state.likelihood !== nextState.likelihood) {
-    //   return true;
-    // }
-    return true;
+    if (this.props.item !== nextProps.item) return true;
+    else if (this.state.likelihood !== nextState.likelihood) return true;
+    else if (this.state.hasRun !== nextState.hasRun) return true;
+    return false;
   }
 
   render() {
@@ -72,51 +57,78 @@ export default class AntCard extends Component {
     return (
       <View
         style={{
-          alignItems: "center",
-          backgroundColor: "cyan",
           borderWidth: 1,
-          flexDirection: "row",
-          height: 100,
-          justifyContent: "space-between",
-          marginVertical: 15,
-          paddingHorizontal: 15,
+          height: 125,
         }}
       >
-        <View>
-          <Text style={{ color: "black", fontSize: 18 }}>
-            {item.name}
-            <Text style={{ color: "navy", fontSize: 12 }}>
-              {"\nWinning odds:\t"}
-              {this.state.likelihood === 0
-                ? this.state.hasRun
-                  ? "In progress..."
-                  : "Not yet run"
-                : this.state.likelihood}
-            </Text>
-          </Text>
-          <TouchableOpacity
+        <Text
+          style={{
+            borderWidth: 0.5,
+            fontSize: 20,
+            paddingVertical: 5,
+            textAlign: "center",
+          }}
+        >
+          {item.name}
+        </Text>
+        <View
+          style={{
+            // alignItems: "center",
+            flexDirection: "row",
+            // justifyContent: "flex-start",
+            paddingVertical: 5,
+          }}
+        >
+          <View
             style={{
               alignItems: "center",
-              backgroundColor: "royalblue",
-              height: 30,
-              justifyContent: "center",
-              width: 60,
+              flex: 3,
             }}
-            onPress={this.calculateLikelihood}
           >
-            <Text>{"RELOAD"}</Text>
-          </TouchableOpacity>
-        </View>
-        <View>
-          <Image
-            resizeMode={"stretch"}
-            source={require("./assets/ant-icon.png")}
+            <Text
+              style={{
+                color: "navy",
+                fontSize: 14,
+                marginVertical: 10,
+              }}
+            >
+              {"Winning odds:\t"}
+              {this.state.likelihood === 0
+                ? this.state.hasRun
+                  ? "Calculating..."
+                  : "Not yet run"
+                : this.state.likelihood.toFixed(5)}
+            </Text>
+            <TouchableOpacity
+              style={{
+                alignItems: "center",
+                backgroundColor: "royalblue",
+                height: 30,
+                justifyContent: "center",
+                width: "80%",
+              }}
+              onPress={this.calculateLikelihood}
+            >
+              <Text>{"RELOAD"}</Text>
+            </TouchableOpacity>
+          </View>
+          <View
             style={{
-              tintColor: item.color.toLowerCase(),
-              height: item.length * 4,
-              width: item.weight * 20,
+              alignItems: "center",
+              flex: 2,
+              justifyContent: "center",
             }}
-          />
+          >
+            <Image
+              resizeMode={"stretch"}
+              source={require("./assets/ant-icon.png")}
+              style={{
+                tintColor: item.color.toLowerCase(),
+                height: item.length * 4,
+                width: item.weight * 20,
+              }}
+            />
+          </View>
         </View>
       </View>
     );

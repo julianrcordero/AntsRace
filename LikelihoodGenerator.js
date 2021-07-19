@@ -1,7 +1,6 @@
 export default function generateAntWinLikelihoodCalculator() {
   const delay = 7000 + Math.random() * 7000;
   const likelihoodOfAntWinning = Math.random();
-  console.log("likelihood", likelihoodOfAntWinning);
 
   return (callback) => {
     setTimeout(() => {

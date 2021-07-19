@@ -1,10 +1,7 @@
 import { StatusBar } from "expo-status-bar";
-import React, { Component, useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dimensions,
-  FlatList,
-  Image,
-  Linking,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -15,16 +12,12 @@ import {
 import { create as apiCreate } from "apisauce";
 import create from "zustand";
 import AntCard from "./AntCard";
-const { height, width } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 import _ from "lodash";
 
 import { useTransition, animated } from "@react-spring/native";
 const AnimatedView = animated(View);
-const ListItemHeight = 150;
-
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-
-import { Transition, Transitioning } from "react-native-reanimated";
+const ListItemHeight = 125;
 
 const useStore = create((set) => ({
   bears: 0,
@@ -49,28 +42,19 @@ export default function App() {
     }
   `;
 
-  // const getItem = () => fetch(myURL + myEndpoint);
   const client = apiCreate({ baseURL: myURL });
   const getItem = () => client.get("", { query });
 
   const loadData = async () => {
     const response = await getItem();
     if (response.ok) {
-      // if (data.length === 0) {
       setData(response.data.data.ants);
-      // }
     } else {
       console.log(response);
     }
 
     setRefreshing(false);
   };
-
-  // const transition = (
-  //   <Transition.Together>
-  //     <Transition.Change durationMs={250} />
-  //   </Transition.Together>
-  // );
 
   useEffect(() => {
     loadData();
@@ -84,7 +68,7 @@ export default function App() {
     let sortedData = [...data];
     let index = sortedData.findIndex((el) => el.name === name);
     sortedData[index] = { ...sortedData[index], likelihood: newLikelihood };
-    setData(_.sortBy(sortedData, ["likelihood"]));
+    setData(_.orderBy(sortedData, ["likelihood"], ["desc"]));
   };
 
   const renderItem = ({ item }) => {
@@ -99,8 +83,6 @@ export default function App() {
     setRefreshing(true);
     loadData();
   };
-
-  const transitioningView = useRef();
 
   const transitions = useTransition(
     data?.map((myData, i) => ({
@@ -123,7 +105,7 @@ export default function App() {
 
   const shuffle = () => setData(_.shuffle(data));
 
-  const sort = () => setData(_.sortBy(data, ["likelihood"]));
+  const handleSort = () => setData(_.sortBy(data, ["likelihood"]));
 
   return (
     <SafeAreaView style={styles.container}>
@@ -138,7 +120,7 @@ export default function App() {
             alignItems: "center",
             backgroundColor: "royalblue",
             justifyContent: "center",
-            padding: 15,
+            padding: 10,
           }}
           onPress={handleRefresh}
         >
@@ -149,7 +131,7 @@ export default function App() {
             alignItems: "center",
             backgroundColor: "royalblue",
             justifyContent: "center",
-            padding: 15,
+            padding: 10,
           }}
           onPress={shuffle} //handleRefresh}
         >
@@ -160,25 +142,19 @@ export default function App() {
             alignItems: "center",
             backgroundColor: "royalblue",
             justifyContent: "center",
-            padding: 15,
+            padding: 10,
           }}
-          onPress={sort} //handleRefresh}
+          onPress={handleSort} //handleRefresh}
         >
           <Text>{"Sort"}</Text>
         </TouchableOpacity>
       </View>
-      {/* <Transitioning.View ref={transitioningView} transition={transition}>
-        <FlatList
-          data={data}
-          keyExtractor={keyExtractor}
-          renderItem={renderItem}
-          contentContainerStyle={contentContainerStyle}
-          refreshing={refreshing}
-          onRefresh={handleRefresh}
-        />
-      </Transitioning.View> */}
       <ScrollView
-        contentContainerStyle={{ minHeight: data.length * ListItemHeight }}
+        contentContainerStyle={{
+          minHeight: data.length * ListItemHeight,
+          width: width * 0.85,
+        }}
+        showsVerticalScrollIndicator={false}
       >
         {transitions((style, item, _, index) => (
           <AnimatedView
@@ -187,6 +163,7 @@ export default function App() {
               bottom: style.y,
               height: style.height,
               opacity: style.opacity,
+              marginVertical: 5,
             }}
             key={item.id}
           >
