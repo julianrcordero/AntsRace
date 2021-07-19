@@ -1,7 +1,10 @@
 # AntsRace
 Ants racing for Stadium Goods
 
-INSTRUCTIONS FOR RUNNING CODE:
+<br>
+<br>
+
+INSTRUCTIONS FOR RUNNING FROM CODE:
 
 1   Download expo-cli:
     "npm i -g expo-cli"
@@ -17,7 +20,8 @@ INSTRUCTIONS FOR RUNNING CODE:
 
 5   Enjoy!
 
-
+<br>
+<br>
 
 INSTRUCTIONS FOR RUNNING TEST BUILD (DIRECTLY ON DEVICE, CODE NOT REQUIRED)
 
