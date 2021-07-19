@@ -6,7 +6,6 @@ import {
   Image,
   Linking,
   SafeAreaView,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -19,7 +18,6 @@ const { height, width } = Dimensions.get("window");
 
 import { useTransition, animated } from "@react-spring/native";
 const AnimatedView = animated(View);
-const ListItemHeight = 190;
 
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
@@ -75,13 +73,13 @@ export default function App() {
   const keyExtractor = (item, index) => String(index);
 
   const eventHandler = (likelihood, name) => {
-    // transitioningView.current.animateNextTransition();
+    transitioningView.current.animateNextTransition();
 
     let sortedData = [...data];
     let index = sortedData.findIndex((el) => el.name === name);
     sortedData[index] = { ...sortedData[index], likelihood: likelihood };
-    // sortedData.sort((a, b) => b.likelihood - a.likelihood);
-    // setData(sortedData);
+    sortedData.sort((a, b) => b.likelihood - a.likelihood);
+    setData(sortedData);
   };
 
   const renderItem = ({ item }) => {
@@ -99,19 +97,6 @@ export default function App() {
 
   const transitioningView = useRef();
 
-  const edges = [...data];
-  const transitions = useTransition(
-    edges?.map((myData, i) => ({ ...myData, y: -(i * ListItemHeight) })),
-    {
-      key: (item) => item.id,
-      from: { height: 0, opacity: 0 },
-      leave: { height: 0, opacity: 0 },
-      enter: ({ y, height }) => ({ y, height, opacity: 1 }),
-      // sort: (a, b) => b.likelihood - a.likelihood,
-      update: ({ y, height }) => ({ y, height }),
-    }
-  );
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="auto" />
@@ -126,7 +111,7 @@ export default function App() {
       >
         <Text>{"RELOAD ALL"}</Text>
       </TouchableOpacity>
-      {/* <Transitioning.View ref={transitioningView} transition={transition}>
+      <Transitioning.View ref={transitioningView} transition={transition}>
         <FlatList
           data={data}
           keyExtractor={keyExtractor}
@@ -135,28 +120,7 @@ export default function App() {
           refreshing={refreshing}
           onRefresh={handleRefresh}
         />
-      </Transitioning.View> */}
-      <ScrollView
-        contentContainerStyle={{ minHeight: edges.length * ListItemHeight }}
-      >
-        {transitions((style, item, _, index) => (
-          <AnimatedView
-            style={{
-              zIndex: edges.length - index,
-              bottom: style.y,
-              height: style.height,
-              opacity: style.opacity,
-            }}
-            key={item.id}
-          >
-            <AntCard
-              item={item}
-              refreshing={refreshing}
-              onChange={eventHandler}
-            />
-          </AnimatedView>
-        ))}
-      </ScrollView>
+      </Transitioning.View>
     </SafeAreaView>
   );
 }
