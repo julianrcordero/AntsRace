@@ -12,45 +12,50 @@ export default class AntCard extends Component {
     hasRun: false,
   };
 
-  calculator = generateAntWinLikelihoodCalculator();
-
-  setLikelihood = (likelihood) => {
-    this.setState(
-      { likelihood }
-      // () => {
-      //   if (this.props.onChange) {
-      //     this.props.onChange(likelihood, this.props.item.name);
-      //   }
-      // }
-    );
+  setLikelihood = (newLikelihood) => {
+    // console.log("setting", this.props.item.name, "to", newLikelihood);
+    this.setState({ likelihood: newLikelihood }, () => {
+      if (this.props.onChange) {
+        this.props.onChange(newLikelihood, this.props.item.name);
+      }
+    });
   };
 
   calculateLikelihood = () => {
-    this.setState({ hasRun: true });
-    this.calculator(this.setLikelihood);
+    this.setState({ hasRun: true, likelihood: 0 });
+
+    let calculator = generateAntWinLikelihoodCalculator();
+    calculator(this.setLikelihood);
   };
 
-  // componentDidMount() {
-  //   // console.log(this.props.item.name, "mounting");
-  //   if (this.state.likelihood === 0) this.calculateLikelihood();
-  // }
+  componentDidMount() {
+    // console.log(this.props.item.likelihood);
+    if (this.props.item.likelihood !== undefined)
+      this.setState({ likelihood: this.props.item.likelihood });
+    // else if (this.state.likelihood === 0) {
+    //   this.calculateLikelihood();
+    // }
+  }
 
   componentDidUpdate(prevProps, prevState) {
-    // if (prevProps.refreshing !== this.props.refreshing) {
-    //   console.log("refreshing", this.props.refreshing, this.props.item.name);
-    //   // this.calculateLikelihood();
-    // }
-    // else if (prevProps.item !== this.props.item) {
-    //   // console.log(prevProps.item.name, this.props.item.name);
-    //   this.calculateLikelihood();
-    // } else
     if (prevProps.item.likelihood !== this.props.item.likelihood) {
-      this.setState({ likelihood: this.props.likelihood });
-      console.log(
-        this.props.item.name.substring(0, 13),
-        "\t\t",
-        this.props.likelihood
-      );
+      //   console.log("props.item.likelihood", this.props.item.likelihood);
+      if (this.props.item.likelihood !== undefined)
+        this.setState(
+          { likelihood: this.props.item.likelihood }
+          //     () =>
+          //   console.log(
+          //     this.props.item.name.substring(0, 13),
+          //     "\t\t",
+          //     "likelihood updated"
+          //   )
+        );
+    } else if (
+      prevProps.refreshing !== this.props.refreshing &&
+      this.props.refreshing
+    ) {
+      this.calculateLikelihood();
+      //   console.log("refreshing");
     }
   }
 
@@ -102,12 +107,6 @@ export default class AntCard extends Component {
             <Text>{"RELOAD"}</Text>
           </TouchableOpacity>
         </View>
-        {/* <MaterialCommunityIcons
-            name="bug"
-            size={item.length * 5}
-            color={item.color.toLowerCase()}
-            iconStyle={{ marginHorizontal: 30 }}
-          /> */}
         <View>
           <Image
             resizeMode={"stretch"}

@@ -56,9 +56,9 @@ export default function App() {
   const loadData = async () => {
     const response = await getItem();
     if (response.ok) {
-      if (data.length === 0) {
-        setData(response.data.data.ants);
-      }
+      // if (data.length === 0) {
+      setData(response.data.data.ants);
+      // }
     } else {
       console.log(response);
     }
@@ -66,11 +66,11 @@ export default function App() {
     setRefreshing(false);
   };
 
-  const transition = (
-    <Transition.Together>
-      <Transition.Change durationMs={250} />
-    </Transition.Together>
-  );
+  // const transition = (
+  //   <Transition.Together>
+  //     <Transition.Change durationMs={250} />
+  //   </Transition.Together>
+  // );
 
   useEffect(() => {
     loadData();
@@ -78,21 +78,13 @@ export default function App() {
 
   const keyExtractor = (item, index) => String(index);
 
-  const eventHandler = (likelihood, name) => {
+  const eventHandler = (newLikelihood, name) => {
     // transitioningView.current.animateNextTransition();
-    // console.log(likelihood);
+    console.log("setting", name, "to", newLikelihood);
     let sortedData = [...data];
     let index = sortedData.findIndex((el) => el.name === name);
-    sortedData[index] = { ...sortedData[index], likelihood: likelihood };
-    // sortedData.sort((a, b) => b.likelihood - a.likelihood);
-    // setData(sortedData);
-    setData(
-      _.sortBy(sortedData, [
-        function (o) {
-          return o.likelihood;
-        },
-      ])
-    );
+    sortedData[index] = { ...sortedData[index], likelihood: newLikelihood };
+    setData(_.sortBy(sortedData, ["likelihood"]));
   };
 
   const renderItem = ({ item }) => {
@@ -110,33 +102,28 @@ export default function App() {
 
   const transitioningView = useRef();
 
-  // const data = [...data];
   const transitions = useTransition(
     data?.map((myData, i) => ({
       ...myData,
       y: -(i * ListItemHeight),
-      likelihood: 0,
     })),
     {
-      key: (item) => item.id,
+      key: (item) => item.name,
       from: { height: 0, opacity: 0 },
       leave: { height: 0, opacity: 0 },
       enter: ({ y, height }) => ({ y, height, opacity: 1 }),
-      // sort: ({a,b,}) =>
+      sort: (a, b) => {
+        b.likelihood - a.likelihood;
+      },
       update: ({ y, height }) => ({ y, height }),
+
+      config: { mass: 5, tension: 500, friction: 150 },
     }
   );
 
   const shuffle = () => setData(_.shuffle(data));
 
-  const sort = () =>
-    setData(
-      _.sortBy(data, [
-        function (o) {
-          return o.likelihood;
-        },
-      ])
-    );
+  const sort = () => setData(_.sortBy(data, ["likelihood"]));
 
   return (
     <SafeAreaView style={styles.container}>
