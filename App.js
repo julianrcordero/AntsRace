@@ -12,8 +12,9 @@ import {
 import { create as apiCreate } from "apisauce";
 import create from "zustand";
 import AntCard from "./AntCard";
-const { width } = Dimensions.get("window");
+const { height, width } = Dimensions.get("window");
 import _ from "lodash";
+import MyCarousel from "./MyCarousel";
 
 import { useTransition, animated } from "@react-spring/native";
 const AnimatedView = animated(View);
@@ -27,6 +28,7 @@ const useStore = create((set) => ({
 
 export default function App() {
   const [data, setData] = useState([]);
+  const [size, setSize] = useState({ width, height });
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -60,24 +62,13 @@ export default function App() {
     loadData();
   }, []);
 
-  const keyExtractor = (item, index) => String(index);
-
   const eventHandler = (newLikelihood, name) => {
-    // transitioningView.current.animateNextTransition();
     console.log("setting", name, "to", newLikelihood);
     let sortedData = [...data];
     let index = sortedData.findIndex((el) => el.name === name);
     sortedData[index] = { ...sortedData[index], likelihood: newLikelihood };
     setData(_.orderBy(sortedData, ["likelihood"], ["desc"]));
   };
-
-  const renderItem = ({ item }) => {
-    return (
-      <AntCard item={item} refreshing={refreshing} onChange={eventHandler} />
-    );
-  };
-
-  const contentContainerStyle = { width: width * 0.85 };
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -175,6 +166,7 @@ export default function App() {
           </AnimatedView>
         ))}
       </ScrollView>
+      <MyCarousel ref={(ref) => (this.carousel = ref)} />
     </SafeAreaView>
   );
 }

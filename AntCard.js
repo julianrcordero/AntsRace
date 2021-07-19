@@ -124,8 +124,8 @@ export default class AntCard extends Component {
               source={require("./assets/ant-icon.png")}
               style={{
                 tintColor: item.color.toLowerCase(),
-                height: item.length * 4,
-                width: item.weight * 20,
+                height: item.length * 3.5,
+                width: item.weight * 16,
               }}
             />
           </View>
