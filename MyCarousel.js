@@ -30,15 +30,13 @@ export default class MyCarousel extends Component {
 
   _renderItem({ item, index }) {
     return (
-      <View style={styles.container}>
+      <View style={styles.imageBox}>
         <Image
           resizeMode={"contain"}
           style={[
             styles.image,
             {
               tintColor: item.color,
-              // height: width / 3
-              height: "90%",
             },
           ]}
           source={require("./assets/ant-icon.png")}
@@ -49,19 +47,16 @@ export default class MyCarousel extends Component {
 
   render() {
     return (
-      <View style={{ flex: 1, flexDirection: "row", justifyContent: "center" }}>
+      <View style={styles.container}>
         <Carousel
           autoplay
           autoplayDelay={500}
           autoplayInterval={1500}
-          layout={"default"}
-          //   ref={(ref) => (this.carousel = ref)}
           data={this.state.data}
-          loop={true}
+          loop
           sliderWidth={300}
           itemWidth={width / 3}
           renderItem={this._renderItem}
-          onSnapToItem={(index) => this.setState({ activeIndex: index })}
         />
       </View>
     );
@@ -70,16 +65,19 @@ export default class MyCarousel extends Component {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "purple",
-    // flex: 1,
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "center",
+    transform: [{ scaleX: -1 }],
+  },
+  imageBox: {
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "white",
     width: width / 3,
   },
   image: {
-    // height: 180,
-    // width: 200,
+    height: "90%",
     transform: [{ rotate: "270deg" }],
   },
 });

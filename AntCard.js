@@ -1,5 +1,12 @@
 import React, { Component } from "react";
-import { Dimensions, Image, Text, TouchableOpacity, View } from "react-native";
+import {
+  Dimensions,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import generateAntWinLikelihoodCalculator from "./LikelihoodGenerator";
 
 export default class AntCard extends Component {
@@ -8,7 +15,7 @@ export default class AntCard extends Component {
   }
 
   state = {
-    likelihood: 0, //not yet run
+    likelihood: 0,
     hasRun: false,
   };
 
@@ -54,46 +61,26 @@ export default class AntCard extends Component {
   render() {
     const { item } = this.props;
 
+    const imageStyle = {
+      tintColor: item.color.toLowerCase(),
+      height: item.length * 2.5,
+      width: item.weight * 12,
+    };
+
     return (
-      <View
-        style={{
-          borderWidth: 1,
-          height: 115,
-        }}
-      >
-        <Text
-          style={{
-            borderWidth: 0.5,
-            fontSize: 18,
-            // paddingVertical: 5,
-            textAlign: "center",
-          }}
-        >
-          {item.name}
-        </Text>
-        <View
-          style={{
-            // alignItems: "center",
-            flexDirection: "row",
-            justifyContent: "center",
-            paddingVertical: 5,
-          }}
-        >
-          <View
-            style={{
-              alignItems: "center",
-              flex: 3,
-              marginHorizontal: 10,
-            }}
-          >
+      <View style={styles.container}>
+        <View style={styles.titleBox}>
+          <Text style={styles.title}>{item.name}</Text>
+        </View>
+        <View style={styles.infoBox}>
+          <View style={styles.oddsBox}>
             <Text
-              style={{
-                color: "navy",
-                fontSize: 14,
-                marginVertical: 10,
-              }}
+              style={[
+                styles.oddsText,
+                { color: this.state.likelihood === 0 ? "grey" : "blue" },
+              ]}
             >
-              {"Winning odds:\t"}
+              <Text style={styles.label}>{"Winning odds:\t"}</Text>
               {this.state.likelihood === 0
                 ? this.state.hasRun
                   ? "Calculating..."
@@ -101,33 +88,17 @@ export default class AntCard extends Component {
                 : this.state.likelihood.toFixed(5)}
             </Text>
             <TouchableOpacity
-              style={{
-                alignItems: "center",
-                backgroundColor: "royalblue",
-                height: 30,
-                justifyContent: "center",
-                width: "100%",
-              }}
+              style={styles.reloadButton}
               onPress={this.calculateLikelihood}
             >
               <Text>{"RELOAD"}</Text>
             </TouchableOpacity>
           </View>
-          <View
-            style={{
-              alignItems: "center",
-              flex: 2,
-              justifyContent: "center",
-            }}
-          >
+          <View style={styles.imageBox}>
             <Image
               resizeMode={"stretch"}
               source={require("./assets/ant-icon.png")}
-              style={{
-                tintColor: item.color.toLowerCase(),
-                height: item.length * 3,
-                width: item.weight * 15,
-              }}
+              style={imageStyle}
             />
           </View>
         </View>
@@ -135,3 +106,53 @@ export default class AntCard extends Component {
     );
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    borderWidth: 1,
+    height: 100,
+    justifyContent: "space-evenly",
+  },
+  imageBox: {
+    alignItems: "center",
+    flex: 2,
+    justifyContent: "center",
+  },
+  infoBox: {
+    flexDirection: "row",
+    justifyContent: "center",
+    paddingVertical: 5,
+  },
+  label: {
+    color: "black",
+    fontWeight: "bold",
+  },
+  oddsBox: {
+    alignItems: "center",
+    flex: 3,
+    marginHorizontal: 10,
+  },
+  oddsText: {
+    color: "darkblue",
+    fontSize: 14,
+    marginVertical: 5,
+  },
+  reloadButton: {
+    alignItems: "center",
+    borderWidth: 0.2,
+    // backgroundColor: "royalblue",
+    height: 25,
+    justifyContent: "center",
+    width: "100%",
+  },
+  title: {
+    fontWeight: "bold",
+    fontSize: 16,
+    textAlign: "center",
+  },
+  titleBox: {
+    borderBottomWidth: 0.5,
+    flex: 1,
+    justifyContent: "center",
+  },
+});
