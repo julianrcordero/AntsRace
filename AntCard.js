@@ -9,39 +9,48 @@ export default class AntCard extends Component {
 
   state = {
     likelihood: 0, //not yet run
+    hasRun: false,
   };
 
   calculator = generateAntWinLikelihoodCalculator();
 
   setLikelihood = (likelihood) => {
-    this.setState({ likelihood }, () => {
-      if (this.props.onChange) {
-        this.props.onChange(this.state.likelihood, this.props.item.name);
-      }
-    });
+    this.setState(
+      { likelihood }
+      // () => {
+      //   if (this.props.onChange) {
+      //     this.props.onChange(likelihood, this.props.item.name);
+      //   }
+      // }
+    );
   };
 
   calculateLikelihood = () => {
-    this.setState({ likelihood: 0 });
+    this.setState({ hasRun: true });
     this.calculator(this.setLikelihood);
   };
 
-  componentDidMount() {
-    console.log(this.props.item.name, "mounting");
-    this.calculateLikelihood();
-  }
+  // componentDidMount() {
+  //   // console.log(this.props.item.name, "mounting");
+  //   if (this.state.likelihood === 0) this.calculateLikelihood();
+  // }
 
   componentDidUpdate(prevProps, prevState) {
+    // if (prevProps.refreshing !== this.props.refreshing) {
+    //   console.log("refreshing", this.props.refreshing, this.props.item.name);
+    //   // this.calculateLikelihood();
+    // }
+    // else if (prevProps.item !== this.props.item) {
+    //   // console.log(prevProps.item.name, this.props.item.name);
+    //   this.calculateLikelihood();
+    // } else
     if (prevProps.item.likelihood !== this.props.item.likelihood) {
-      this.setState({ likelihood: this.props.item.likelihood });
-    } else if (prevState.likelihood !== this.state.likelihood) {
+      this.setState({ likelihood: this.props.likelihood });
       console.log(
         this.props.item.name.substring(0, 13),
         "\t\t",
-        this.state.likelihood
+        this.props.likelihood
       );
-    } else if (prevProps.refreshing !== this.props.refreshing) {
-      this.calculateLikelihood();
     }
   }
 
@@ -72,12 +81,11 @@ export default class AntCard extends Component {
           <Text style={{ color: "black", fontSize: 18 }}>
             {item.name}
             <Text style={{ color: "navy", fontSize: 12 }}>
-              {/* {"\nColor:\t" + item.color}
-              {"\nLength:\t" + item.length}
-              {"\nWeight:\t" + item.weight} */}
               {"\nWinning odds:\t"}
-              {typeof this.state.likelihood === "number"
-                ? this.state.likelihood.toFixed(5)
+              {this.state.likelihood === 0
+                ? this.state.hasRun
+                  ? "In progress..."
+                  : "Not yet run"
                 : this.state.likelihood}
             </Text>
           </Text>

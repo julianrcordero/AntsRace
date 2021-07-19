@@ -16,10 +16,11 @@ import { create as apiCreate } from "apisauce";
 import create from "zustand";
 import AntCard from "./AntCard";
 const { height, width } = Dimensions.get("window");
+import _ from "lodash";
 
 import { useTransition, animated } from "@react-spring/native";
 const AnimatedView = animated(View);
-const ListItemHeight = 190;
+const ListItemHeight = 150;
 
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
@@ -55,11 +56,14 @@ export default function App() {
   const loadData = async () => {
     const response = await getItem();
     if (response.ok) {
-      setData(response.data.data.ants);
-      setRefreshing(false);
+      if (data.length === 0) {
+        setData(response.data.data.ants);
+      }
     } else {
       console.log(response);
     }
+
+    setRefreshing(false);
   };
 
   const transition = (
@@ -68,20 +72,27 @@ export default function App() {
     </Transition.Together>
   );
 
-  // useEffect(() => {
-  //   loadData();
-  // }, []);
+  useEffect(() => {
+    loadData();
+  }, []);
 
   const keyExtractor = (item, index) => String(index);
 
   const eventHandler = (likelihood, name) => {
     // transitioningView.current.animateNextTransition();
-
+    // console.log(likelihood);
     let sortedData = [...data];
     let index = sortedData.findIndex((el) => el.name === name);
     sortedData[index] = { ...sortedData[index], likelihood: likelihood };
     // sortedData.sort((a, b) => b.likelihood - a.likelihood);
     // setData(sortedData);
+    setData(
+      _.sortBy(sortedData, [
+        function (o) {
+          return o.likelihood;
+        },
+      ])
+    );
   };
 
   const renderItem = ({ item }) => {
@@ -99,33 +110,76 @@ export default function App() {
 
   const transitioningView = useRef();
 
-  const edges = [...data];
+  // const data = [...data];
   const transitions = useTransition(
-    edges?.map((myData, i) => ({ ...myData, y: -(i * ListItemHeight) })),
+    data?.map((myData, i) => ({
+      ...myData,
+      y: -(i * ListItemHeight),
+      likelihood: 0,
+    })),
     {
       key: (item) => item.id,
       from: { height: 0, opacity: 0 },
       leave: { height: 0, opacity: 0 },
       enter: ({ y, height }) => ({ y, height, opacity: 1 }),
-      // sort: (a, b) => b.likelihood - a.likelihood,
+      // sort: ({a,b,}) =>
       update: ({ y, height }) => ({ y, height }),
     }
   );
 
+  const shuffle = () => setData(_.shuffle(data));
+
+  const sort = () =>
+    setData(
+      _.sortBy(data, [
+        function (o) {
+          return o.likelihood;
+        },
+      ])
+    );
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="auto" />
-      <TouchableOpacity
+      <View
         style={{
-          alignItems: "center",
-          backgroundColor: "royalblue",
-          justifyContent: "center",
-          padding: 15,
+          flexDirection: "row",
         }}
-        onPress={handleRefresh}
       >
-        <Text>{"RELOAD ALL"}</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            alignItems: "center",
+            backgroundColor: "royalblue",
+            justifyContent: "center",
+            padding: 15,
+          }}
+          onPress={handleRefresh}
+        >
+          <Text>{"Run odds"}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            alignItems: "center",
+            backgroundColor: "royalblue",
+            justifyContent: "center",
+            padding: 15,
+          }}
+          onPress={shuffle} //handleRefresh}
+        >
+          <Text>{"Shuffle"}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            alignItems: "center",
+            backgroundColor: "royalblue",
+            justifyContent: "center",
+            padding: 15,
+          }}
+          onPress={sort} //handleRefresh}
+        >
+          <Text>{"Sort"}</Text>
+        </TouchableOpacity>
+      </View>
       {/* <Transitioning.View ref={transitioningView} transition={transition}>
         <FlatList
           data={data}
@@ -137,12 +191,12 @@ export default function App() {
         />
       </Transitioning.View> */}
       <ScrollView
-        contentContainerStyle={{ minHeight: edges.length * ListItemHeight }}
+        contentContainerStyle={{ minHeight: data.length * ListItemHeight }}
       >
         {transitions((style, item, _, index) => (
           <AnimatedView
             style={{
-              zIndex: edges.length - index,
+              zIndex: data.length - index,
               bottom: style.y,
               height: style.height,
               opacity: style.opacity,
