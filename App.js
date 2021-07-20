@@ -101,25 +101,6 @@ export default function App() {
 
   const shuffle = () => setData(_.shuffle(data));
 
-  const EmptyComponent = ({ title }) => (
-    <View
-      style={{
-        // flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        width: width,
-      }}
-    >
-      <Text
-        style={{
-          fontSize: 30,
-        }}
-      >
-        {title}
-      </Text>
-    </View>
-  );
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <AuthContext.Provider value={{ user, setUser }}>
@@ -143,9 +124,10 @@ export default function App() {
 
             <ScrollView
               contentContainerStyle={[
-                data.length > 0
-                  ? { minHeight: data.length * ListItemHeight }
-                  : { minHeight: 5 * ListItemHeight },
+                {
+                  minHeight:
+                    (data.length > 0 ? data.length : 5) * ListItemHeight,
+                },
                 styles.scrollViewContainer,
               ]}
               showsVerticalScrollIndicator={false}
