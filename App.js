@@ -104,9 +104,10 @@ export default function App() {
   const EmptyComponent = ({ title }) => (
     <View
       style={{
-        flex: 1,
+        // flex: 1,
         alignItems: "center",
         justifyContent: "center",
+        width: width,
       }}
     >
       <Text
@@ -140,15 +141,13 @@ export default function App() {
               </View>
             )}
 
-            <Text>{"Logged in as:\t" + user}</Text>
             <ScrollView
               contentContainerStyle={[
-                { minHeight: data.length * ListItemHeight },
+                data.length > 0
+                  ? { minHeight: data.length * ListItemHeight }
+                  : { minHeight: 5 * ListItemHeight },
                 styles.scrollViewContainer,
               ]}
-              ListEmptyComponent={
-                <EmptyComponent title="Nothing here, come back later.." />
-              }
               showsVerticalScrollIndicator={false}
               refreshControl={
                 <RefreshControl
@@ -157,7 +156,7 @@ export default function App() {
                 />
               }
             >
-              {data.length > 0 &&
+              {data.length > 0 ? (
                 transitions((style, item, _, index) => (
                   <AnimatedView
                     style={{
@@ -175,8 +174,23 @@ export default function App() {
                       onChange={eventHandler}
                     />
                   </AnimatedView>
-                ))}
+                ))
+              ) : (
+                <>
+                  <Text style={styles.errorText}>
+                    {"Error retrieving data"}
+                  </Text>
+                  <View style={styles.buttonBox}>
+                    <MyButton
+                      text={"RETRY"}
+                      color={"dodgerblue"}
+                      onPress={handleRefresh}
+                    />
+                  </View>
+                </>
+              )}
             </ScrollView>
+            <Text>{"Logged in as:\t" + user}</Text>
             <View style={styles.buttonBox}>
               <MyButton
                 text={"LOG OUT"}
@@ -199,6 +213,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     width: width * 0.85,
+  },
+  errorText: {
+    fontWeight: "bold",
+    fontSize: 20,
+    textAlign: "center",
   },
   safeArea: {
     flex: 1,
