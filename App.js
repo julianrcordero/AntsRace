@@ -1,7 +1,9 @@
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  Alert,
   Dimensions,
+  RefreshControl,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -49,7 +51,12 @@ export default function App() {
     if (response.ok) {
       setData(response.data.data.ants);
     } else {
-      console.log(response);
+      Alert.alert("Error retrieving data", "Please pull down to refresh", [
+        {
+          text: "OK",
+        },
+      ]);
+      setData([]);
     }
 
     setRefreshing(false);
@@ -94,24 +101,44 @@ export default function App() {
 
   const shuffle = () => setData(_.shuffle(data));
 
+  const EmptyComponent = ({ title }) => (
+    <View
+      style={{
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Text
+        style={{
+          fontSize: 30,
+        }}
+      >
+        {title}
+      </Text>
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <AuthContext.Provider value={{ user, setUser }}>
         {user ? (
           <>
             <StatusBar style="auto" />
-            <View style={styles.buttonBox}>
-              <MyButton
-                color={"dodgerblue"}
-                onPress={handleRefresh}
-                text={"RUN ODDS"}
-              />
-              <MyButton
-                color={"lightgrey"}
-                onPress={shuffle}
-                text={"SHUFFLE"}
-              />
-            </View>
+            {data.length > 0 && (
+              <View style={styles.buttonBox}>
+                <MyButton
+                  color={"dodgerblue"}
+                  onPress={handleRefresh}
+                  text={"RUN ODDS"}
+                />
+                <MyButton
+                  color={"lightgrey"}
+                  onPress={shuffle}
+                  text={"SHUFFLE"}
+                />
+              </View>
+            )}
 
             <Text>{"Logged in as:\t" + user}</Text>
             <ScrollView
@@ -119,26 +146,36 @@ export default function App() {
                 { minHeight: data.length * ListItemHeight },
                 styles.scrollViewContainer,
               ]}
+              ListEmptyComponent={
+                <EmptyComponent title="Nothing here, come back later.." />
+              }
               showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={handleRefresh}
+                />
+              }
             >
-              {transitions((style, item, _, index) => (
-                <AnimatedView
-                  style={{
-                    zIndex: data.length - index,
-                    bottom: style.y,
-                    height: style.height,
-                    opacity: style.opacity,
-                    marginVertical: 5,
-                  }}
-                  key={item.name}
-                >
-                  <AntCard
-                    item={item}
-                    refreshing={refreshing}
-                    onChange={eventHandler}
-                  />
-                </AnimatedView>
-              ))}
+              {data.length > 0 &&
+                transitions((style, item, _, index) => (
+                  <AnimatedView
+                    style={{
+                      zIndex: data.length - index,
+                      bottom: style.y,
+                      height: style.height,
+                      opacity: style.opacity,
+                      marginVertical: 5,
+                    }}
+                    key={item.name}
+                  >
+                    <AntCard
+                      item={item}
+                      refreshing={refreshing}
+                      onChange={eventHandler}
+                    />
+                  </AnimatedView>
+                ))}
             </ScrollView>
             <View style={styles.buttonBox}>
               <MyButton
